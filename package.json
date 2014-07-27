@@ -1,7 +1,7 @@
 {
   "name": "npm-explicit-deps",
   "version": "1.0.0",
-  "description": "",
+  "description": "Say goodbye to fickle `~` and `^` semver ranges",
   "main": "npm-explicit-deps.js",
   "scripts": {
     "test": "node ./test.js"
@@ -24,7 +24,5 @@
   },
   "bin": {
     "npm-explicit-deps": "bin/npm-explicit-deps.js"
-  },
-  "optionalDependencies": {},
-  "peerDependencies": {}
+  }
 }

@@ -29,7 +29,8 @@ function explicitDeps (_json, options) {
   }
 
   depTypes.forEach(function (depType) {
-    json[depType] = fix(xtend(json[depType]))
+    if (json[depType])
+      json[depType] = fix(xtend(json[depType]))
   })
 
   return json
