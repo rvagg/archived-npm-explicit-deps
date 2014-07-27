@@ -9,16 +9,22 @@
   "author": "Rod Vagg <rod@vagg.org> (https://github.com/rvagg)",
   "license": "MIT",
   "devDependencies": {
-    "tape": "~2.13.4",
     "mkdirp": "~0.5.0",
     "rimraf": "~2.2.8",
+    "tape": "~2.13.4",
     "xtend": "~3.0.0"
   },
   "dependencies": {
+    "ansi-styles": "~1.1.0",
+    "deep-equal": "~0.2.1",
     "minimist": "~0.2.0",
-    "sanever": "~3.0.1"
+    "read": "~1.0.5",
+    "sanever": "~3.0.1",
+    "xtend": "~3.0.0"
   },
   "bin": {
     "npm-explicit-deps": "bin/npm-explicit-deps.js"
-  }
+  },
+  "optionalDependencies": {},
+  "peerDependencies": {}
 }

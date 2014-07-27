@@ -1,18 +1,38 @@
-const sanever = require('sanever')
+const sanever  = require('sanever')
+    , xtend    = require('xtend')
+    , depTypes = require('./dep-types')
 
+function explicitDeps (_json, options) {
+  if (!options)
+    options = {}
 
-function explicitDeps (json) {
+  var json = xtend(_json)
+
   function fix (dependencies) {
     Object.keys(dependencies).forEach(function (name) {
       try {
         var range = new sanever.Range(dependencies[name])
-        if (range)
-          dependencies[name] = range.format()
+
+        if (!range)
+          return
+
+        // if '1.0.0-0' is outside the range on the upper side, and we're doing
+        // zeroOnly then skip this one
+        if (options.zeroOnly && !sanever.outside('1.0.0-0', range, '>'))
+          return
+
+        dependencies[name] = range.format()
       } catch (e) {}
     })
+
+    return dependencies
   }
 
-  fix(json.dependencies)
+  depTypes.forEach(function (depType) {
+    json[depType] = fix(xtend(json[depType]))
+  })
+
+  return json
 }
 
 

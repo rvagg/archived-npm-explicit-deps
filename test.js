@@ -40,11 +40,11 @@ function mkTestPkg (dir, dependencies) {
     if (dependencies.dependencies)
       testJson.dependencies = dependencies.dependencies
     if (dependencies.devDependencies)
-      testJson.dependencies = dependencies.devDependencies
+      testJson.devDependencies = dependencies.devDependencies
     if (dependencies.optionalDependencies)
-      testJson.dependencies = dependencies.optionalDependencies
+      testJson.optionalDependencies = dependencies.optionalDependencies
     if (dependencies.peerDependencies)
-      testJson.dependencies = dependencies.peerDependencies
+      testJson.peerDependencies = dependencies.peerDependencies
   }
 
   fs.writeFileSync(
@@ -62,12 +62,22 @@ function assertDependencies (t, dir, dependencies) {
         && !dependencies.devDependencies
         && !dependencies.optionalDependencies
         && !dependencies.peerDependencies) {
-    t.deepEqual(testJson.dependencies, dependencies)
+    t.deepEqual(testJson.dependencies, dependencies, 'deepEqual dependencies')
+  } else {
+    if (dependencies.dependencies)
+      t.deepEqual(testJson.dependencies, dependencies.dependencies, 'deepEqual dependencies')
+    if (dependencies.devDependencies)
+      t.deepEqual(testJson.devDependencies, dependencies.devDependencies, 'deepEqual devDependencies')
+    if (dependencies.optionalDependencies)
+      t.deepEqual(testJson.optionalDependencies, dependencies.optionalDependencies, 'deepEqual optionalDependencies')
+    if (dependencies.peerDependencies)
+      t.deepEqual(testJson.peerDependencies, dependencies.peerDependencies, 'deepEqual peerDependencies')
   }
 }
 
+'dependencies devDependencies optionalDependencies peerDependencies'.split(' ').forEach(function (depType) {
 
-test('sanity check', function (t) {
+test(depType + ' sanity check', function (t) {
   var dir = rnddir(t)
   mkTestPkg(dir, { 'foo': '~0.0.0' })
   assertDependencies(t, dir, { 'foo': '~0.0.0' })
@@ -75,64 +85,137 @@ test('sanity check', function (t) {
 })
 
 
-test('single ~ dependency', function (t) {
+test(depType + ' single ~ dependency', function (t) {
   var dir = rnddir(t)
-  mkTestPkg(dir, { 'foo': '~0.1.0' })
+    , inp = {}
+    , exp = {}
+
+  inp[depType] = { 'foo': '~0.1.0' }
+  exp[depType] = { 'foo': '>=0.1.0 <0.2.0-0' }
+
+  mkTestPkg(dir, inp)
   explicitDeps(dir, function (err) {
     t.ifError(err)
-    assertDependencies(t, dir, { 'foo': '>=0.1.0 <0.2.0-0' })
+    assertDependencies(t, dir, exp)
     t.end()
   })
 })
 
 
-test('single ^ dependency', function (t) {
+test(depType + ' single ^ dependency', function (t) {
   var dir = rnddir(t)
-  mkTestPkg(dir, { 'foo': '^0.1.0' })
+    , inp = {}
+    , exp = {}
+
+  inp[depType] = { 'foo': '^0.1.0' }
+  exp[depType] = { 'foo': '>=0.1.0 <1.0.0-0' }
+
+  mkTestPkg(dir, inp)
   explicitDeps(dir, function (err) {
     t.ifError(err)
-    assertDependencies(t, dir, { 'foo': '>=0.1.0 <1.0.0-0' })
+    assertDependencies(t, dir, exp)
     t.end()
   })
 })
 
 
-test('single x.y dependency', function (t) {
+test(depType + ' single x.y dependency', function (t) {
   var dir = rnddir(t)
-  mkTestPkg(dir, { 'foo': '0.1' })
+    , inp = {}
+    , exp = {}
+
+  inp[depType] = { 'foo': '0.1' }
+  exp[depType] = { 'foo': '>=0.1.0 <0.2.0-0' }
+
+  mkTestPkg(dir, inp)
   explicitDeps(dir, function (err) {
     t.ifError(err)
-    assertDependencies(t, dir, { 'foo': '>=0.1.0 <0.2.0-0' })
+    assertDependencies(t, dir, exp)
     t.end()
   })
 })
 
 
-test('single x dependency', function (t) {
+test(depType + ' single x dependency', function (t) {
   var dir = rnddir(t)
-  mkTestPkg(dir, { 'foo': '1' })
+    , inp = {}
+    , exp = {}
+
+  inp[depType] = { 'foo': '1' }
+  exp[depType] = { 'foo': '>=1.0.0 <2.0.0-0' }
+
+  mkTestPkg(dir, inp)
   explicitDeps(dir, function (err) {
     t.ifError(err)
-    assertDependencies(t, dir, { 'foo': '>=1.0.0 <2.0.0-0' })
+    assertDependencies(t, dir, exp)
     t.end()
   })
 })
 
 
-test('single * dependency', function (t) {
+test(depType + ' single * dependency', function (t) {
   var dir = rnddir(t)
-  mkTestPkg(dir, { 'foo': '0.1.*' })
+    , inp = {}
+    , exp = {}
+
+  inp[depType] = { 'foo': '0.1.*' }
+  exp[depType] = { 'foo': '>=0.1.0 <0.2.0-0' }
+
+  mkTestPkg(dir, inp)
   explicitDeps(dir, function (err) {
     t.ifError(err)
-    assertDependencies(t, dir, { 'foo': '>=0.1.0 <0.2.0-0' })
+    assertDependencies(t, dir, exp)
     t.end()
   })
 })
 
 
-test('many', function (t) {
+test(depType + ' zero-only', function (t) {
   var dir = rnddir(t)
-  mkTestPkg(dir, {
+    , inp = {}
+    , exp = {}
+
+  inp[depType] = {
+      'a': '0.1.*'
+    , 'b': '1.0.0'
+    , 'c': '~1.0.1'
+    , 'd': '~0.1.2'
+    , 'e': '^0.9.1'
+    , 'f': '0.9'
+    , 'g': '1.9'
+    , 'h': '>=0 <1'
+    , 'i': '>=1 <2'
+    , 'j': '~10'
+  }
+  exp[depType] = {
+      'a': '>=0.1.0 <0.2.0-0'
+    , 'b': '1.0.0'
+    , 'c': '~1.0.1'
+    , 'd': '>=0.1.2 <0.2.0-0'
+    , 'e': '>=0.9.1 <1.0.0-0'
+    , 'f': '>=0.9.0 <0.10.0-0'
+    , 'g': '1.9'
+    , 'h': '>=0.0.0 <1.0.0-0'
+    , 'i': '>=1 <2'
+    , 'j': '~10'
+  }
+
+
+  mkTestPkg(dir, inp)
+  explicitDeps(dir, { zeroOnly: true }, function (err) {
+    t.ifError(err)
+    assertDependencies(t, dir, exp)
+    t.end()
+  })
+})
+
+
+test(depType + ' many', function (t) {
+  var dir = rnddir(t)
+    , inp = {}
+    , exp = {}
+
+  inp[depType] = {
       'a': '0'
     , 'b': '1'
     , 'c': '2'
@@ -150,28 +233,33 @@ test('many', function (t) {
     , 'o': '1.1.1'
     , 'p': '2.2.2'
     , 'q': '1.0.0-2'
-  })
+  }
+  exp[depType] = {
+      'a': '>=0.0.0 <1.0.0-0'
+    , 'b': '>=1.0.0 <2.0.0-0'
+    , 'c': '>=2.0.0 <3.0.0-0'
+    , 'd': '>=0.1.0 <0.2.0-0'
+    , 'e': '>=1.1.0 <1.2.0-0'
+    , 'f': '>=1.0.0'
+    , 'g': '>=2.0.0'
+    , 'h': '>=3.0.0'
+    , 'i': '>=1.4.0 <3.0.0-0'
+    , 'j': '>=0.0.0 <0.1.0-0'
+    , 'k': '>=0.0.0 <1.0.0-0'
+    , 'l': '>=0.0.0-beta1 <0.1.0-0'
+    , 'm': '>=1.1.1-1 <1.2.0-0'
+    , 'n': '0.0.0'
+    , 'o': '1.1.1'
+    , 'p': '2.2.2'
+    , 'q': '1.0.0-2'
+  }
+
+  mkTestPkg(dir, inp)
   explicitDeps(dir, function (err) {
-    t.ifError(err)
-    assertDependencies(t, dir, {
-        'a': '>=0.0.0 <1.0.0-0'
-      , 'b': '>=1.0.0 <2.0.0-0'
-      , 'c': '>=2.0.0 <3.0.0-0'
-      , 'd': '>=0.1.0 <0.2.0-0'
-      , 'e': '>=1.1.0 <1.2.0-0'
-      , 'f': '>=1.0.0'
-      , 'g': '>=2.0.0'
-      , 'h': '>=3.0.0'
-      , 'i': '>=1.4.0 <3.0.0-0'
-      , 'j': '>=0.0.0 <0.1.0-0'
-      , 'k': '>=0.0.0 <1.0.0-0'
-      , 'l': '>=0.0.0-beta1 <0.1.0-0'
-      , 'm': '>=1.1.1-1 <1.2.0-0'
-      , 'n': '0.0.0'
-      , 'o': '1.1.1'
-      , 'p': '2.2.2'
-      , 'q': '1.0.0-2'
-    })
+    t.ifError(err, 'no error')
+    assertDependencies(t, dir, exp)
     t.end()
   })
+})
+
 })
