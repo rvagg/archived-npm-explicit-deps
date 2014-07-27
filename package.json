@@ -1,6 +1,6 @@
 {
   "name": "npm-explicit-deps",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Say goodbye to fickle `~` and `^` semver ranges",
   "main": "npm-explicit-deps.js",
   "scripts": {
